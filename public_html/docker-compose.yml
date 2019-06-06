@@ -1,0 +1,14 @@
+version: "3"
+services:
+  web1:
+    build: .
+    container_name: web-server-1
+    ports:
+     - "8080:80"
+    networks:
+     - my-network
+    volumes:
+     - "/home/deploy/public_html:/home/deploy/public_html"
+    restart: always
+    command: sh -x /opt/service.sh
+

@@ -1,0 +1,13 @@
+#!/bin/bash
+dbname=drupal
+username=dbuser
+password=d3fault123c
+query1="CREATE DATABASE $dbname";
+query2="GRANT ALL PRIVILEGES ON $dbname.* TO '$username'@'$host' IDENTIFIED BY '$password'";
+#run query
+mysql -e "$query1"
+mysql -e "$query2"
+#update privileges, without this new user will be created but not active
+mysql -e "flush privileges;"
+tail -f /var/log/mysql/error.log
+
