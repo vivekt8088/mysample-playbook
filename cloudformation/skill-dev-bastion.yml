@@ -1,0 +1,67 @@
+---
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'Network Redux CloudFormation - NR-VIVEK-TEST-SSH Bastion Stack'
+
+Parameters:
+  EnvironmentName:
+    Description: 'Network Redux CloudFormation - NR-VIVEK-TEST-SSH Bastion Stack'
+    Type: String
+    Default: 'Network Redux CloudFormation - NR-VIVEK-TEST-SSH Bastion Stack'
+
+  KeyPairName:
+    Description: Key file used to SSH into servers
+    Default: docker-key-vivek
+    Type: String
+
+  PublicSubnet1:
+    Description: Public subnet ID in AZ1.
+    Type: String
+    Default: subnet-031b2c1318098bcd0
+
+  BastionSecurityGroup:
+    Description: Security group for NR-Vivek-Bastion SSH Bastion.
+    Type: String
+    Default: sg-0c6592a0cbb26492e
+
+  BastionInstanceType:
+    Description: Instance type for NR-Vivek SSH Bastion.
+    Type: String
+    Default: t2.micro
+    AllowedValues:
+    - t2.micro
+    - t2.small
+    ConstraintDescription: must be a valid EC2 instance type.
+
+Mappings:
+  BastionAMI:
+    us-west-2:
+      AMI: ami-061392db613a6357b
+
+Resources:
+  Ec2Instance:
+    Type: "AWS::EC2::Instance"
+    Properties:
+      ImageId:
+        Fn::FindInMap:
+          - "BastionAMI"
+          - Ref: "AWS::Region"
+          - "AMI"
+      InstanceType: "t2.micro"
+      KeyName:
+        Ref: "KeyPairName"
+      NetworkInterfaces:
+        - AssociatePublicIpAddress: "true"
+          DeviceIndex: "0"
+          GroupSet:
+            - Ref: "BastionSecurityGroup"
+          SubnetId:
+            Ref: "PublicSubnet1"
+      UserData:
+        "Fn::Base64": |
+          #!/bin/bash -x
+          yum update -y
+          yum install git -y
+          pip install ansible
+      Tags:
+      - Key: Name
+        Value: nr-vivek-test-bastion

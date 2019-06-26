@@ -1,0 +1,66 @@
+---
+AWSTemplateFormatVersion: '2010-09-09'
+Description: "Network Redux CloudFormation - Vivek Test-VPC Security Group"
+Parameters:
+  EnvironmentName:
+    Description: 'Vivek Test-VPC Security Group - US-WEST-2'
+    Type: String
+    Default: 'Network Redux CloudFormation - Vivek Test-VPC Security Group - US-WEST'
+  VPC:
+    Type: String
+    Default: vpc-0ab5e8421e29a9c5b
+Resources:
+
+
+ InstanceSecurityGroupBASTIONtoWEBSERVER:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupName: SG_Vivek_test_BASTION_TO_WEBSERVERS_SSH
+      GroupDescription: Security Group for Bastion to Web server
+      VpcId:
+        Ref: VPC
+      SecurityGroupIngress:
+      - IpProtocol: tcp
+        FromPort: '22'
+        ToPort: '22'
+        CidrIp: 10.20.10.0/24
+      Tags:
+        - Key: Name
+          Value: SG_Vivek_test_BASTION_TO_WEBSERVERS_SSH
+
+
+ InstanceSecurityGroupWEBSERVICEtoPUBLIC:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupName: SG_Vivek_test_WEB_TO_PUBLIC
+      GroupDescription: Security Group for Webservice to Public
+      VpcId:
+        Ref: VPC
+      SecurityGroupIngress:
+      - IpProtocol: tcp
+        FromPort: '80'
+        ToPort: '80'
+        CidrIp: 0.0.0.0/0
+      - IpProtocol: tcp
+        FromPort: '443'
+        ToPort: '443'
+        CidrIp: 0.0.0.0/0
+      Tags:
+        - Key: Name
+          Value: SG_Vivek_test_WEB_TO_PUBLIC
+
+ InstanceSecurityGroupPUBLICtoBASTION:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupName: SG_Vivek_test_PUBLIC_TO_BASTION
+      GroupDescription: Security Group for SSH Bastion
+      VpcId:
+        Ref: VPC
+      SecurityGroupIngress:
+      - IpProtocol: tcp
+        FromPort: '22'
+        ToPort: '22'
+        CidrIp: 0.0.0.0/0
+      Tags:
+        - Key: Name
+          Value: SG_Vivek_test_PUBLIC_TO_BASTION

@@ -1,0 +1,67 @@
+---
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'Network Redux CloudFormation - NR-VIVEK-TEST-Web Stack'
+
+Parameters:
+  EnvironmentName:
+    Description: 'Network Redux CloudFormation - NR-VIVEK-TEST-Web Stack'
+    Type: String
+    Default: 'Network Redux CloudFormation - NR-VIVEK-TEST-web Stack'
+
+  KeyPairName:
+    Description: Key file used to SSH into servers
+    Default: docker-key-vivek
+    Type: String
+
+  PublicSubnet1:
+    Description: Public subnet ID in AZ1.
+    Type: String
+    Default: subnet-041e4211fb568c4ac
+
+  WebSecurityGroup:
+    Description: Security group for NR-Vivek-Web.
+    Type: String
+    Default: sg-006cc1480623a35db
+
+  WebInstanceType:
+    Description: Instance type for NR-Vivek test-web.
+    Type: String
+    Default: t2.micro
+    AllowedValues:
+    - t2.micro
+    - t2.small
+    ConstraintDescription: must be a valid EC2 instance type.
+
+Mappings:
+  WebAMI:
+    us-west-2:
+      AMI: ami-005bdb005fb00e791
+
+Resources:
+  Ec2Instance:
+    Type: "AWS::EC2::Instance"
+    Properties:
+      ImageId:
+        Fn::FindInMap:
+          - "WebAMI"
+          - Ref: "AWS::Region"
+          - "AMI"
+      InstanceType: "t2.micro"
+      KeyName:
+        Ref: "KeyPairName"
+      NetworkInterfaces:
+        - AssociatePublicIpAddress: "true"
+          DeviceIndex: "0"
+          GroupSet:
+            - Ref: "WebSecurityGroup"
+          SubnetId:
+            Ref: "PublicSubnet1"
+      UserData:
+        "Fn::Base64": |
+          #!/bin/bash -x
+          yum update -y
+          yum install git -y
+          pip install ansible
+      Tags:
+      - Key: Name
+        Value: nr-vivek-test-Web

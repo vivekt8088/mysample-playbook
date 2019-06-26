@@ -1,0 +1,197 @@
+---
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'Network Redux CloudFormation - NR-Vivek-Test-VPC-Stack '
+Parameters:
+  EnvironmentName:
+    Description: 'Network Redux - NR-Vivek-Test-VPC-Stack'
+    Type: String
+    Default: 'Network Redux - NR-Vivek-Test-VPC-Stack'
+
+  AZ1:
+    Description: Set Availability Zone 1
+    Type: String
+    Default: us-west-2a
+    AllowedValues:
+    - us-west-2a
+    - us-west-2b
+    ConstraintDescription: Must be a valid EC2 Availability Zone
+
+  AZ2:
+    Description: Set Availability Zone 2
+    Type: String
+    Default: us-west-2b
+    AllowedValues:
+    - us-west-2a
+    - us-west-2b
+    ConstraintDescription: Must be a valid EC2 Availability Zone
+
+  KeyPairName:
+    Description: Key file used to SSH into servers
+    Default: docker-key-vivek
+    Type: String
+
+Resources:
+  VPC:
+    Type: AWS::EC2::VPC
+    Properties:
+      CidrBlock: 10.20.0.0/16
+      EnableDnsSupport: 'true'
+      EnableDnsHostnames: 'true'
+      InstanceTenancy: default
+      Tags:
+      - Key: Name
+        Value: NR-VIVEK-TEST-VPC-OREGON
+
+
+  InternetGateway:
+    Type: AWS::EC2::InternetGateway
+    Properties:
+      Tags:
+      - Key: Name
+        Value: NR_VIVEK_TEST_VPC_IG
+
+  AttachGateway:
+    Type: AWS::EC2::VPCGatewayAttachment
+    Properties:
+      VpcId:
+        Ref: VPC
+      InternetGatewayId:
+        Ref: InternetGateway
+
+
+  PublicSubnet1:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId:
+        Ref: VPC
+      CidrBlock: 10.20.10.0/24
+      AvailabilityZone:
+        Ref: AZ1
+      Tags:
+      - Key: Name
+        Value: VIVEK_TEST_PUB_SUBNET_AZ1
+
+
+
+  PublicSubnet2:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId:
+        Ref: VPC
+      CidrBlock: 10.20.15.0/24
+      AvailabilityZone:
+        Ref: AZ2
+      Tags:
+      - Key: Name
+        Value: VIVEK_TEST_PUB_SUBNET_AZ2
+
+  PublicSubnet3:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId:
+        Ref: VPC
+      CidrBlock: 10.20.20.0/24
+      AvailabilityZone:
+        Ref: AZ1
+      Tags:
+      - Key: Name
+        Value: VIVEK_TEST_WEB_SUBNET_AZ1
+
+
+
+  PublicSubnet4:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId:
+        Ref: VPC
+      CidrBlock: 10.20.25.0/24
+      AvailabilityZone:
+        Ref: AZ2
+      Tags:
+      - Key: Name
+        Value: VIVEK_TEST_WEB_SUBNET_AZ2
+
+  PublicRouteTable:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId:
+        Ref: VPC
+      Tags:
+        - Key: Name
+          Value: VIVEK_TEST_EGRESS_TO_PUBLIC
+
+  PublicRouteTableAssociation:
+    Type: AWS::EC2::Route
+    Properties:
+      RouteTableId:
+        Ref: PublicRouteTable
+      DestinationCidrBlock: 0.0.0.0/0
+      GatewayId:
+        Ref: InternetGateway
+
+  PublicSubnetRouteTableAssociation1:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId:
+        Ref: PublicSubnet1
+      RouteTableId:
+        Ref: PublicRouteTable
+
+  PublicSubnetRouteTableAssociation2:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId:
+        Ref: PublicSubnet2
+      RouteTableId:
+        Ref: PublicRouteTable
+  PublicSubnetRouteTableAssociation3:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId:
+        Ref: PublicSubnet3
+      RouteTableId:
+        Ref: PublicRouteTable
+
+  PublicSubnetRouteTableAssociation4:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId:
+        Ref: PublicSubnet4
+      RouteTableId:
+        Ref: PublicRouteTable
+
+
+
+Outputs:
+  StackName:
+    Description: Name of the stack as specified with the cfn-create-stack command.
+    Value:
+      Ref: AWS::StackName
+  RegionName:
+    Description: Name of the stack as specified with the cfn-create-stack command.
+    Value:
+      Ref: AWS::Region
+#  VPCID:
+#    Description: VPC
+#    Value:
+#      Ref: VPC
+  VpcId:
+    Value: !Ref VPC
+    Export:
+      Name: !Sub ${AWS::StackName}-VPCId
+  InternetGatewayID:
+    Description: InternetGateway
+    Value:
+      Ref: InternetGateway
+  PublicSubnetId1:
+    Value:
+      Ref: PublicSubnet1
+  PublicSubnetId2:
+    Value:
+      Ref: PublicSubnet2
+  PublicSubnetId3:
+    Value:
+      Ref: PublicSubnet3
+  PublicSubnetId4:
+    Value:
+      Ref: PublicSubnet4
